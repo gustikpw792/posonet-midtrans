@@ -66,6 +66,7 @@ class Notification_handler extends CI_Controller {
             // echo "Waiting customer to finish transaction order_id: " . $order_id . " using " . $type;
         } else if ($transaction == 'deny') {
             // TODO set payment status in merchant's database to 'Denied'
+            $return = $this->endpointModel->updateInvoiceStatus($notif, 'deny');
             // echo "Payment using " . $type . " for transaction order_id: " . $order_id . " is denied.";
         } else if ($transaction == 'expire') {
             // TODO set payment status in merchant's database to 'expire'

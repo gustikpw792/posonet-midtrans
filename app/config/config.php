@@ -16,7 +16,7 @@ $config['endpoint'] = array(
         'token' => 'POSONET-EP-SW5pS29kZVJhaGFzaWE=', // Client key for authentication
     ),
     array(
-        'base_uri' => 'http://localhost/posonet.prima/api/', // Base URL for your API endpoints
+        'base_uri' => 'http://localhost/primahome/api/', // Base URL for your API endpoints
         'token' => 'POSONET-EP-SW5pS29kZVJhaGFzaWE=', // Client key for authentication
     ),
 );

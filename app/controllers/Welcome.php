@@ -35,7 +35,7 @@ class Welcome extends CI_Controller {
 			);
 		} else {
 			$data = array(
-				'active' => '',
+				'active' => 'firstpage',
 				'no_internet' => '',
 			);
 		}
@@ -249,6 +249,14 @@ class Welcome extends CI_Controller {
 
 	public function cobaa(){
 		echo json_encode($this->endpointModel->getPaymentDetails('2002-91238998282-327'));
+		
+	}
+	public function qr(){
+		$this->load->model('Ruangwa_model', 'wa');
+		// $qr = $this->wa->getQr();
+		$qr = $this->wa->sendMessage();
+		// echo json_encode($qr);
+		echo $qr;
 		
 	}
 

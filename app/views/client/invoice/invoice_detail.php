@@ -65,7 +65,7 @@
                 </div>
                 <?php if ($jumlah_pembayaran >= 10000) : ?>
                     <div class="alert alert-warning">
-                        <span class="text-warning font-bold">Tagihan ini untuk pemakaian internet s/d <?= $next_expired_local ?></span><br><br>
+                        <span class="text-danger font-bold">Tagihan ini untuk pemakaian internet s/d <?= $next_expired_local ?></span><br><br>
                         <small>Tekan tombol "PROSES PEMBAYARAN" untuk melanjutkan pembayaran. Pastikan data diatas sudah benar.</small>
                     </div>
                 <?php endif; ?>
@@ -88,7 +88,7 @@
             <img class="img-responsive center-block" src="<?= base_url('assets/posonet/img/primahomelogo3.png') ?>" alt="" style="height:30px;">
             
         </div>
-            <div class="col-lg-12 text-center"><br><br><br><br></div>
+        <div class="col-lg-12 text-center"><br><br><br><br></div>
         </div>
         
     </div>
@@ -112,7 +112,7 @@
                         onSuccess: function(result) {
                             // alert("Payment Success "+result);
                             console.log(result);
-                            // window.location.href = result.finish_redirect_url;
+                            window.location.href = result.finish_redirect_url;
                         },
                         onPending: function(result) {
                             // alert("Waiting for your payment!"+result);
