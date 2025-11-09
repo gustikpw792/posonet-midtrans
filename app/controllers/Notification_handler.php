@@ -22,7 +22,7 @@ class Notification_handler extends CI_Controller {
     public function index()
     {
         // non-relevant function only used for demo/example purpose
-        // $this->printExampleWarningMessage();
+        $this->printExampleWarningMessage();
 
         try {
             $notif = new \Midtrans\Notification();

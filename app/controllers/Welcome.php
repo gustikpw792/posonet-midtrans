@@ -25,6 +25,10 @@ class Welcome extends CI_Controller {
 		$this->load->helper('MY_ribuan_helper');
 	}
 
+	public function yooo()
+	{
+		echo count($this->config->item('endpoint'));
+	}
 	public function index($inet = false)
 	{
 		if ($this->security->xss_clean($inet)) {
@@ -57,7 +61,8 @@ class Welcome extends CI_Controller {
 		} elseif ($status_code == 200 && $transaction_status == 'pending') {
 			$this->payment_waiting($order_id, $status_code, $transaction_status);
 		} else {
-			$this->payment_failed($order_id, $status_code, $transaction_status);
+			// $this->payment_failed($order_id, $status_code, $transaction_status);
+			redirect('/');
 		}
 	}
 
@@ -72,36 +77,40 @@ class Welcome extends CI_Controller {
 
 		if ($status_code == 200 && $transaction_status == 'settlement') {
 			// Update invoice status in the database
-			$getData = $this->endpointModel->getPaymentDetails($order_id)->data;
-			// echo json_encode($getData);
+			$retriveData = $this->endpointModel->getPaymentDetails($order_id);
+			// echo json_encode($retriveData);
 			// exit();
-			if ($getData->payment_type == 'cstore') {
-				$type_bayar = $getData->store;
-			} elseif ($getData->payment_type == 'bank_transfer') {
-				$type_bayar = strtoupper(json_decode($getData->va_numbers)[0]->bank) . ' - ' . json_decode($getData->va_numbers)[0]->va_number;
-			} else {
-				$type_bayar = $getData->payment_type;
+			if ($retriveData->status) {
+				$getData = $retriveData->data;
+				if ($getData->payment_type == 'cstore') {
+					$type_bayar = $getData->store;
+				} elseif ($getData->payment_type == 'bank_transfer') {
+					$type_bayar = strtoupper(json_decode($getData->va_numbers)[0]->bank) . ' - ' . json_decode($getData->va_numbers)[0]->va_number;
+				} else {
+					$type_bayar = $getData->payment_type;
+				}
+
+				$data = array(
+					'order_id' => $getData->order_id,
+					'transaction_time' => $getData->transaction_time,
+					'settlement_time' => $getData->settlement_time,
+					'transaction_status' => $getData->transaction_status,
+					'transaction_id' => $getData->transaction_id,
+					'status_code' => $getData->status_code,
+					'payment_type' => $type_bayar,
+					'issuer' => $getData->issuer,
+					'gross_amount' => ribuan($getData->gross_amount),
+					'merchant_id' => $getData->merchant_id,
+					'nama_pelanggan' => $getData->nama_pelanggan,
+					'no_internet' => $getData->no_pelanggan,
+					'telp' => $getData->telp,
+					'expired' => tgl_lokal($getData->expired),
+				);
+
+				$this->session->set_flashdata('success', 'Pembayaran berhasil. Terima kasih telah bertransaksi dengan kami.');
+				$this->load->view('client/notif/payment_success',$data);
+				
 			}
-
-			$data = array(
-				'order_id' => $getData->order_id,
-				'transaction_time' => $getData->transaction_time,
-				'settlement_time' => $getData->settlement_time,
-				'transaction_status' => $getData->transaction_status,
-				'transaction_id' => $getData->transaction_id,
-				'status_code' => $getData->status_code,
-				'payment_type' => $type_bayar,
-				'issuer' => $getData->issuer,
-				'gross_amount' => ribuan($getData->gross_amount),
-				'merchant_id' => $getData->merchant_id,
-				'nama_pelanggan' => $getData->nama_pelanggan,
-				'no_internet' => $getData->no_pelanggan,
-				'telp' => $getData->telp,
-				'expired' => tgl_lokal($getData->expired),
-			);
-
-			$this->session->set_flashdata('success', 'Pembayaran berhasil. Terima kasih telah bertransaksi dengan kami.');
-			$this->load->view('client/notif/payment_success',$data);
 		} else {
 			$this->session->set_flashdata('error', 'Pembayaran gagal atau tidak valid. Silakan coba lagi.');
 		}

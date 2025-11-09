@@ -68,6 +68,7 @@ class Endpoint_model extends CI_Model {
     }
 
     public function getPaymentDetails($order_id) {
+        $count = 0;
         try {
             foreach ($this->endpoint as $e) {
                 $client = new Client([
@@ -83,9 +84,23 @@ class Endpoint_model extends CI_Model {
                 $res = json_decode($response->getBody());
                 // Check if the response status is true
                 if ($res->status) {
-                    return $res;
+                    return (object) array(
+                        'data' => $res->data, 
+                        'status' => true
+                    );
+
+                    // return $res;
                     exit();
                 }
+                $count++;
+            }
+
+            // data return not found everywere
+            if (count($this->endpoint) == $count ) {
+                return (object) array(
+                    'data' => [], 
+                    'status' => false
+                );
             }
         } catch (\Exception $e) {
             echo json_encode('error: ' . $e->getMessage());
