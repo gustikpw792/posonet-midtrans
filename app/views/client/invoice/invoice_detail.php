@@ -9,7 +9,7 @@
             </div>
             <div class="text-center m-t">
 
-                <label for="">Detail Pembayaran</label>
+                <label for="">Detail Tagihan</label>
                 <!-- <h2 class="font-bold"></?=$kode_invoice ?></h2> -->
             </div>
 
