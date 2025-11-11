@@ -51,7 +51,7 @@ class Welcome extends CI_Controller {
 
 	public function payment()
 	{
-		// "http://myposonet.com/posonet-midtrans/payment/finish?order_id=912389982821218&status_code=200&transaction_status=settlement"
+		// "https://myposonet.com/posonet-midtrans/payment/finish?order_id=912389982821218&status_code=200&transaction_status=settlement"
 		$order_id = $this->input->get('order_id', TRUE);
 		$status_code = $this->input->get('status_code', TRUE);
 		$transaction_status = $this->input->get('transaction_status', TRUE);
@@ -110,9 +110,13 @@ class Welcome extends CI_Controller {
 				$this->session->set_flashdata('success', 'Pembayaran berhasil. Terima kasih telah bertransaksi dengan kami.');
 				$this->load->view('client/notif/payment_success',$data);
 				
+			} else {
+				$this->session->set_flashdata('error', 'Pembayaran gagal atau tidak valid. Silakan coba lagi.');
+				redirect();
 			}
 		} else {
 			$this->session->set_flashdata('error', 'Pembayaran gagal atau tidak valid. Silakan coba lagi.');
+			redirect();
 		}
 	}
 
