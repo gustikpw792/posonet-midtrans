@@ -3,20 +3,38 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 
 $config['midtrans'] = array(
-    'client_key' => 'SB-Mid-client-eGXEePyTJUHopg1U',
-    'server_key' => 'SB-Mid-server-Yo3nw-fGh3ltjOHCKiJMD7yp',
+    'sandbox_client_key' => 'SB-Mid-client-eGXEePyTJUHopg1U',
+    'sandbox_server_key' => 'SB-Mid-server-Yo3nw-fGh3ltjOHCKiJMD7yp',
+    'sanbox_url' => 'https://app.sandbox.midtrans.com/snap/v1/transactions',
+    'sanbox_base_url' => 'https://app.sandbox.midtrans.com/v2',
+    'sandbox_snapjs_url' => 'https://app.sandbox.midtrans.com/snap/snap.js',
+    'production_client_key' => 'Mid-client-uZMTuwphF6Oq2EqV',
+    'production_server_key' => 'Mid-server-SV52rKRe-VOOqVfNlL19ZD_g',
+    'production_url' => 'https://app.midtrans.com/snap/v1/transactions',
+    'production_snapjs_url' => 'https://app.midtrans.com/snap/snap.js',
     'is_production' => false, // Set to Development/Sandbox Environment (default). Set to true for Production Environment (accept real transaction).
     'is_sanitized' => true, // Set to true to enable sanitization of input data
     'is_3ds' => true, // Set to true to enable 3D Secure
 );
 
+$config['cstore_logo'] = array(
+    'bri' => 'https://snap-assets.al-pc-id-b.cdn.gtflabs.io/snap/v4/assets/bri-39f5d44b1c42e70ad089fc52b909ef410d708d563119eb0da3a6abd49c4a595c.svg',
+    'bni' => 'https://snap-assets.al-pc-id-b.cdn.gtflabs.io/snap/v4/assets/bni-163d98085f5fe9df4068b91d64c50f5e5b347ca2ee306d27954e37b424ec4863.svg',
+    'bsi' => 'https://snap-assets.al-pc-id-b.cdn.gtflabs.io/snap/v4/assets/bsi-85a0f8e55fa42f7b6837d7b8945c6d0791a86d250f8fd6545cc708868f9d5dec.svg',
+    'qris' => 'https://snap-assets.al-pc-id-b.cdn.gtflabs.io/snap/v4/assets/qris-5ab65ea8ea12e00daee664042ed976a75c574fcd2fb1acd04e6cfc773d9bda54.svg',
+    
+
+);
+
 $config['endpoint'] = array(
     array(
-        'base_uri' => 'http://localhost/posonet/api/', // Base URL for your API endpoints
+        // 'base_uri' => 'http://localhost/posonet/api/', // Base URL for your API endpoints
+        'base_uri' => 'http://localhost/posonet/billing_api/', // Base URL for your API endpoints
         'token' => 'POSONET-EP-SW5pS29kZVJhaGFzaWE=', // Client key for authentication
     ),
     array(
-        'base_uri' => 'http://localhost/primahome/api/', // Base URL for your API endpoints
+        // 'base_uri' => 'http://localhost/primahome/api/', // Base URL for your API endpoints
+        'base_uri' => 'http://localhost/primahome/billing_api/', // Base URL for your API endpoints
         'token' => 'POSONET-EP-SW5pS29kZVJhaGFzaWE=', // Client key for authentication
     ),
 );
@@ -251,7 +269,7 @@ $config['allow_get_array'] = TRUE;
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 0;
+$config['log_threshold'] = 1;
 
 /*
 |--------------------------------------------------------------------------

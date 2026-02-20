@@ -12,23 +12,28 @@ class Welcome extends CI_Controller {
 	{
 		parent::__construct();
 
-		$this->midtrans = $this->config->item('midtrans');;
+		$this->midtrans = $this->config->item('midtrans');
 		// Load the Midtrans library
-		\Midtrans\Config::$serverKey = $this->midtrans['server_key'];
+		if ($this->midtrans['is_production']) {
+            $this->serverKeys = $this->midtrans['production_server_key'];
+			$this->snap_url = $this->midtrans['production_snapjs_url'];
+			$this->client_key = $this->midtrans['production_client_key'];
+        } else {
+			$this->serverKeys = $this->midtrans['sandbox_server_key'];
+			$this->snap_url = $this->midtrans['sandbox_snapjs_url'];
+			$this->client_key = $this->midtrans['sandbox_client_key'];
+        }
+		\Midtrans\Config::$serverKey = $this->serverKeys;
 		\Midtrans\Config::$isProduction = $this->midtrans['is_production'];
 		\Midtrans\Config::$isSanitized = $this->midtrans['is_sanitized'];
 		\Midtrans\Config::$is3ds = $this->midtrans['is_3ds'];
 
 		$this->load->model('Endpoint_model', 'endpointModel');
 
-		$this->load->helper('MY_bulan_helper');
-		$this->load->helper('MY_ribuan_helper');
+		$this->load->helper('my_bulan_helper');
+		$this->load->helper('my_ribuan_helper');
 	}
 
-	public function yooo()
-	{
-		echo count($this->config->item('endpoint'));
-	}
 	public function index($inet = false)
 	{
 		if ($this->security->xss_clean($inet)) {
@@ -58,8 +63,9 @@ class Welcome extends CI_Controller {
 
 		if ($status_code == 200 && $transaction_status == 'settlement') {
 			$this->payment_success($order_id, $status_code, $transaction_status);
-		} elseif ($status_code == 200 && $transaction_status == 'pending') {
-			$this->payment_waiting($order_id, $status_code, $transaction_status);
+		} 
+		elseif ($status_code == 201 && $transaction_status == 'pending') {
+			$this->payment_pending($order_id, $status_code, $transaction_status);
 		} else {
 			// $this->payment_failed($order_id, $status_code, $transaction_status);
 			redirect('/');
@@ -76,6 +82,71 @@ class Welcome extends CI_Controller {
 		);
 
 		if ($status_code == 200 && $transaction_status == 'settlement') {
+			// Update invoice status in the database
+			$retriveData = $this->endpointModel->getPaymentDetails($order_id);
+			// echo json_encode($retriveData);
+			// exit();
+			if ($retriveData->status && $retriveData->data->transaction_status == 'settlement') {
+				
+				$cstore_logo = '';
+				$getData = $retriveData->data;
+
+				if ($getData->payment_type == 'cstore') {
+					$type_bayar = $getData->store;
+				} elseif ($getData->payment_type == 'bank_transfer') {
+					// $type_bayar = strtoupper(json_decode($getData->va_numbers)[0]->bank) . ' - ' . json_decode($getData->va_numbers)[0]->va_number;
+					$type_bayar = json_decode($getData->va_numbers)[0]->va_number;
+					
+					$this->cstoreLogo = $this->config->item('cstore_logo');
+					$cstore_logo = $this->cstoreLogo[json_decode($getData->va_numbers)[0]->bank];
+				} else {
+					$type_bayar = $getData->payment_type;
+				}
+
+
+				$data = array(
+					'order_id' => $getData->order_id,
+					'transaction_time' => $getData->transaction_time,
+					'settlement_time' => $getData->settlement_time,
+					'transaction_status' => $getData->transaction_status,
+					'transaction_id' => $getData->transaction_id,
+					'status_code' => $getData->status_code,
+					'payment_type' => $type_bayar,
+					'issuer' => $getData->issuer,
+					'gross_amount' => ribuan($getData->gross_amount),
+					'merchant_id' => $getData->merchant_id,
+					'nama_pelanggan' => $getData->nama_pelanggan,
+					'no_internet' => $getData->no_pelanggan,
+					'telp' => $getData->telp,
+					'expired' => tgl_lokal($getData->expired),
+					'is_production' => $getData->mode,
+					'telp_cs' => $getData->telp_cs,
+					'cstore_logo' => $cstore_logo,
+				);
+
+				$this->session->set_flashdata('success', 'Pembayaran berhasil. Terima kasih telah bertransaksi dengan kami.');
+				$this->load->view('client/notif/payment_success',$data);
+				
+			} else {
+				$this->session->set_flashdata('error', 'Pembayaran gagal atau tidak valid. Silakan coba lagi.');
+				redirect();
+			}
+		} else {
+			$this->session->set_flashdata('error', 'Pembayaran gagal atau tidak valid. Silakan coba lagi.');
+			redirect();
+		}
+	}
+
+	public function payment_pending($order_id, $status_code, $transaction_status)
+	{	
+		$data = array(
+			'active' => '',
+			'order_id' => $order_id,
+			'status_code' => $status_code,
+			'transaction_status' => $transaction_status,
+		);
+
+		if ($status_code == 201 && $transaction_status == 'pending') {
 			// Update invoice status in the database
 			$retriveData = $this->endpointModel->getPaymentDetails($order_id);
 			// echo json_encode($retriveData);
@@ -105,14 +176,17 @@ class Welcome extends CI_Controller {
 					'no_internet' => $getData->no_pelanggan,
 					'telp' => $getData->telp,
 					'expired' => tgl_lokal($getData->expired),
+					'is_production' => $getData->mode,
+					'telp_cs' => $getData->telp_cs,
 				);
 
-				$this->session->set_flashdata('success', 'Pembayaran berhasil. Terima kasih telah bertransaksi dengan kami.');
-				$this->load->view('client/notif/payment_success',$data);
+				// $this->session->set_flashdata('success', 'Menunggu Pembayaran. Segera selesaikan transaksi Anda.');
+				// $this->load->view('client/notif/payment_pending',$data);
+				echo json_encode($data);
 				
 			} else {
 				$this->session->set_flashdata('error', 'Pembayaran gagal atau tidak valid. Silakan coba lagi.');
-				redirect();
+				// redirect();
 			}
 		} else {
 			$this->session->set_flashdata('error', 'Pembayaran gagal atau tidak valid. Silakan coba lagi.');
@@ -146,26 +220,27 @@ class Welcome extends CI_Controller {
 	{
 		$response = $this->endpointModel->getInvoice($no_inet);
 		
-		$res = $response->data;
-
 		if (!$response->status) {
 			// If no data found, redirect to the invoice get page with an error message
 			$this->session->set_flashdata('error', 'Nomor internet tidak ditemukan.');
 			redirect(site_url());
 		} 
 
+		$data = $response->data;
+
 		// Tampilkan tagihan jika hari ini 17 hari sebelum expired atau setelah expired
 		$today = strtotime(date('Y-m-d'));
-		$expired_date = strtotime($res->expired_date);
+
+		$expired_date = strtotime($data->subscription->expired_date);
 
 		// 15 hari sebelum expired
 		$before_expired = strtotime('-17 days', $expired_date);
-		if (empty($res->kode_invoice)) {
+		if (empty($data->billing->kode_invoice)) {
 			$this->session->set_flashdata('error', 'Tagihan belum dapat ditampilkan. (INVOICE BELUM TERSEDIA)');
 			redirect(site_url());
 		} elseif ($today >= $before_expired || $today > $expired_date) {
 			// Tagihan ditampilkan
-			$this->_show_invoice($res);
+			$this->_show_invoice($response);
 		} else {
 			// Jika tidak memenuhi syarat, redirect ke halaman utama atau tampilkan pesan
 			$this->session->set_flashdata('error', 'Tagihan belum dapat ditampilkan. (LUNAS)');
@@ -173,27 +248,34 @@ class Welcome extends CI_Controller {
 		}
 	}
 
-	private function _show_invoice($res)
+	private function _show_invoice($response)
 	{
+		$result = $response->data;
+
 		$this->load->view('client/templates/header.php',
 		$data = array(
 			'active' => 'getOrder',
+			'md_snap_url' => $this->snap_url,
+			'md_client_key' => $this->client_key,
 		));
 		$this->load->view('client/invoice/invoice_detail.php',
 		$data = array(
-			'no_internet' => $res->no_pelanggan,
-			'tanggal' => date('Y-m-d H:i:s'),
-			'nama_pelanggan' => $res->nama_pelanggan,
-			'nama_paket' => $res->nama_paket,
-			'telp' => $res->telp,
-			'expired' => $res->status_berlangganan == 'ISOLIR' ? tgl_lokal($res->expired_date) : tgl_lokal($res->next_expired),
-			'status_berlangganan' => $res->status_berlangganan . ' pada ' . tgl_lokal($res->expired_date),
-			'v_jumlah_pembayaran' => $res->payment_status == 'LUNAS' ? 0 : ribuan($res->trx_amount), // Assuming 100000 is the amount for unpaid invoices
-			'jumlah_pembayaran' => $res->trx_amount, // Assuming 100000 is the amount for unpaid invoices
-			'status_pembayaran' => $res->payment_status,
-			'kode_invoice' => ($res->kode_invoice != null) ? $res->kode_invoice : $res->no_pelanggan . date('ymdHi'),
-			'next_expired_local' => tgl_lokal($res->next_expired),
-			'next_expired' => $res->next_expired,
+			'tanggal' => $response->time,
+			'no_internet' => $result->account->no_internet,
+			'nama_pelanggan' => $result->account->nama_pelanggan,
+			'telp' => $result->account->telp,
+			'telp_cs' => $result->profile->telp_cs,
+
+			'nama_paket' => $result->subscription->paket,
+			'expired' => $result->billing->status == 'ISOLIR' ? tgl_lokal($result->subscription->expired_date) : tgl_lokal($result->billing->billing_periode_end),
+			'status_berlangganan' => 'Berakhir pada ' . tgl_lokal($result->subscription->expired_date),
+			'v_jumlah_pembayaran' => $result->billing->status == 'PAID' ? 0 : ribuan($result->billing->total_amount), // Assuming 100000 is the amount for unpaid invoices
+			'jumlah_pembayaran' => $result->billing->status == 'PAID' ? 0 : $result->billing->total_amount, // Assuming 100000 is the amount for unpaid invoices
+			// 'jumlah_pembayaran' => $result->billing->total_amount, // Assuming 100000 is the amount for unpaid invoices
+			'status_pembayaran' => $result->billing->status,
+			'kode_invoice' => ($result->billing->kode_invoice != null) ? $result->billing->kode_invoice : $result->account->no_pelanggan . date('ymdHi'),
+			'next_expired_local' => tgl_lokal($result->billing->billing_periode_end),
+			'next_expired' => $result->billing->billing_periode_end,
 		));
 		$this->load->view('client/templates/footer.php');
 	}

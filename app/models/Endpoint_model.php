@@ -21,7 +21,7 @@ class Endpoint_model extends CI_Model {
                     'base_uri' => $e['base_uri'],
                 ]);
 
-                $response = $client->request('GET', 'getInvoice', [
+                $response = $client->request('GET', 'getBill', [
                     'query' => ['no_internet' => $no_internet],
                     'headers' => [
                         'Authorization' => 'Bearer ' . $e['token']
@@ -29,7 +29,7 @@ class Endpoint_model extends CI_Model {
                 ]);
 
                 $res = json_decode($response->getBody());
-                if ($res->status == true) {
+                if ($res->status) {
                     return $res;
                     exit();
                 }
@@ -40,7 +40,7 @@ class Endpoint_model extends CI_Model {
     }
 
 
-    public function updateInvoiceStatus($data, $transaction_status) {
+    public function updateInvoiceStatus($data) {
         
         try {
             foreach ($this->endpoint as $e) {
@@ -48,7 +48,7 @@ class Endpoint_model extends CI_Model {
                     'base_uri' => $e['base_uri'],
                 ]);
 
-                $response = $client->request('POST', 'updateInvoiceStatus', [
+                $response = $client->request('POST', 'updateBillingStatus', [
                     'form_params' => $data,
                     'headers' => [
                         'Authorization' => 'Bearer ' . $e['token']
@@ -57,6 +57,7 @@ class Endpoint_model extends CI_Model {
 
                 $result = json_decode($response->getBody());
                 // Check if the response status is true
+			    // log_message('error', 'Midtrans callback invalid signature for order '.$response->getBody());
                 if ($result['status']) {
                     return $result;
                     exit();
@@ -86,6 +87,7 @@ class Endpoint_model extends CI_Model {
                 if ($res->status) {
                     return (object) array(
                         'data' => $res->data, 
+                        'message' => $res->message, 
                         'status' => true
                     );
 
@@ -99,12 +101,39 @@ class Endpoint_model extends CI_Model {
             if (count($this->endpoint) == $count ) {
                 return (object) array(
                     'data' => [], 
+                    'message' => 'Nomor Internet tidak ditemukan!', 
                     'status' => false
                 );
             }
         } catch (\Exception $e) {
             echo json_encode('error: ' . $e->getMessage());
         }   
+    }
+
+    public function checkOrderStatus($order_id)
+    {
+        try {
+            $client = new Client([
+                    'base_uri' => $e['base_uri'],
+                ]);
+
+            $response = $client->request('GET', 'updateBillingStatus', [
+                'form_params' => $data,
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $e['token']
+                ]
+            ]);
+
+            $result = json_decode($response->getBody());
+            // Check if the response status is true
+            // log_message('error', 'Midtrans callback invalid signature for order '.$response->getBody());
+            if ($result['status']) {
+                return $result;
+                exit();
+            }
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
     }
 
 

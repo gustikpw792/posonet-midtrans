@@ -21,7 +21,7 @@
 
     <?php if ($active == 'getOrder') : ?>
         <script type="text/javascript" 
-        src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key="SB-Mid-client-eGXEePyTJUHopg1U"></script>
+        src="<?=$md_snap_url ?>"
+        data-client-key="<?=$md_client_key ?>"></script>
     <?php endif; ?>
 </head>

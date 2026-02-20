@@ -9,35 +9,35 @@
             </div>
             <div class="text-center m-t">
 
-                <label for="">Detail Tagihan</label>
+                <label for="invoiceForm">Detail Tagihan</label>
                 <!-- <h2 class="font-bold"></?=$kode_invoice ?></h2> -->
             </div>
 
             <form id="invoiceForm" class="m-t" role="form" action="#" method="post">
                 <input type="hidden" name="<?= $this->security->get_csrf_token_name() ?>" value="<?= $this->security->get_csrf_hash() ?>">
                 <div class="form-group">
-                    <label>Nomor Internet</label>
-                    <input type="text" class="form-control" disabled value="<?= $no_internet ?>">
+                    <label for="noint">Nomor Internet</label>
+                    <input type="text" id="noint" class="form-control" disabled value="<?= $no_internet ?>">
                 </div>
                 <div class="form-group">
                     <label>Nama</label>
                     <input type="text" class="form-control font-bold bg-muted" disabled value="<?= $nama_pelanggan ?>">
                 </div>
                 <div class="form-group">
-                    <label>Paket</label>
-                    <input type="text" class="form-control" disabled value="<?= $nama_paket ?>">
+                    <label for="npaket">Paket</label>
+                    <input type="text" id="npaket" class="form-control" disabled value="<?= $nama_paket ?>">
                 </div>
                 <div class="form-group tooltip-demo">
-                    <label>Telp | WhatsApp </label>
+                    <label for="wa">Telp | WhatsApp </label>
                     <!-- <button class="btn btn-circle btn-xs" type="button" data-toggle="popover" data-placement="auto top" data-content="Notifikasi pembayaran akan dikirim ke nomor ini!"> ? </button> -->
-                    <input type="text" name="telp" class="form-control" disabled value="<?= $telp ?>">
+                    <input type="text" id="wa" name="telp" class="form-control" disabled value="<?= $telp ?>">
                     <small>
                         <span class="text-muted font-italic">Notifikasi pembayaran akan dikirim ke nomor ini!</span>
                     </small>
                 </div>
-                <div class="form-group">
-                    <label>Status Berlangganan</label>
-                    <input type="text" name="status_berlangganan" class="form-control text-bold" disabled value="<?= $status_berlangganan ?>">
+                <div class="form-group" hidden>
+                    <label for="sts">Status Berlangganan</label>
+                    <input type="text" id="sts" name="status_berlangganan" class="form-control text-bold" disabled value="<?= $status_berlangganan ?>">
                 </div>
                 <input type="text" name="no_internet" value="<?= $no_internet ?>" hidden>
                 <input type="text" name="nama_pelanggan" value="<?= $nama_pelanggan ?>" hidden>
@@ -78,7 +78,7 @@
         <div class="col-md-12 xtext-center m-t">
             <p class="text-muted">
                 <small>
-                    Mengalami kendala? Silahkan hubungi customer service kami <a href="https://wa.me/+6285298470228"><strong>wa.me/085298470228</strong></a><br>
+                    Mengalami kendala? Silahkan hubungi customer service kami <a href="https://wa.me/<?= $telp_cs ?>" target="_blank"><strong>wa.me/<?= $telp_cs ?></strong></a><br>
                     <!-- Tagihan ini berlaku sampai dengan tanggal <strong></?= $expired ?></strong>. -->
                 </small>
             </p>
@@ -117,7 +117,7 @@
                         onPending: function(result) {
                             // alert("Waiting for your payment!"+result);
                             console.log(result);
-                            // window.location.href = result.finish_redirect_url;
+                            window.location.href = result.pdf_url;
                         },
                         onError: function(result) {
                             // alert("Payment Failed"+result);

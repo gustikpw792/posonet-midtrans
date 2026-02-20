@@ -13,7 +13,12 @@ class Notification_handler extends CI_Controller {
         parent::__construct();
         $this->midtrans = $this->config->item('midtrans');;
 		// Load the Midtrans library
-		\Midtrans\Config::$serverKey = $this->midtrans['server_key'];
+        if ($this->midtrans['is_production']) {
+            $this->serverKeys = $this->midtrans['production_server_key'];
+        } else {
+            $this->serverKeys = $this->midtrans['sandbox_server_key'];
+        }
+		\Midtrans\Config::$serverKey = $this->serverKeys;
 		\Midtrans\Config::$isProduction = $this->midtrans['is_production'];
 
         $this->load->model('Endpoint_model', 'endpointModel');
@@ -23,6 +28,8 @@ class Notification_handler extends CI_Controller {
     {
         // non-relevant function only used for demo/example purpose
         $this->printExampleWarningMessage();
+        // echo 'haloooooooooo';
+        // exit();
 
         try {
             $notif = new \Midtrans\Notification();
@@ -37,8 +44,22 @@ class Notification_handler extends CI_Controller {
         $type = $notif->payment_type;
         $order_id = $notif->order_id;
         $fraud = $notif->fraud_status;
-        
-        // echo json_encode($notif);
+        $signature_key = $notif->signature_key;
+        $notif->is_production = $this->midtrans['is_production'];
+
+        // Verifikasi signature key
+		// $expected = hash('sha512',
+		// 	$order_id.
+		// 	$notif->status_code.
+		// 	$notif->gross_amount.
+		// 	$this->serverKeys
+		// );
+
+        // if (!isset($notif->signature_key) || $notif->signature_key !== $expected) {
+        //     log_message('error', 'Midtrans callback invalid signature for order '.$notif['order_id']);
+		// 	show_error('Invalid signature', 403);
+        //     exit();
+        // }
 
         if ($transaction == 'capture') {
             // For credit card transaction, we need to check whether transaction is challenge by FDS or not
@@ -49,28 +70,28 @@ class Notification_handler extends CI_Controller {
                     // echo "Transaction order_id: " . $order_id ." is challenged by FDS";
                 } else {
                     // TODO set payment status in merchant's database to 'Success'
-                    $return = $this->endpointModel->updateInvoiceStatus($notif, 'capture');
+                    $return = $this->endpointModel->updateInvoiceStatus($notif);
                     // echo "Transaction order_id: " . $order_id ." successfully captured using " . $type;
                 }
             }
         } else if ($transaction == 'settlement') {
             // TODO set payment status in merchant's database to 'Settlement'
             
-            $return = $this->endpointModel->updateInvoiceStatus($notif, 'settlement');
-
+            $return = $this->endpointModel->updateInvoiceStatus($notif);
+            echo json_encode($return);
             // echo "Transaction order_id: " . $order_id ." successfully transfered using " . $type;
         } else if ($transaction == 'pending') {
             // TODO set payment status in merchant's database to 'Pending'
 
-            $return = $this->endpointModel->updateInvoiceStatus($notif, 'pending');
+            $return = $this->endpointModel->updateInvoiceStatus($notif);
             // echo "Waiting customer to finish transaction order_id: " . $order_id . " using " . $type;
         } else if ($transaction == 'deny') {
             // TODO set payment status in merchant's database to 'Denied'
-            $return = $this->endpointModel->updateInvoiceStatus($notif, 'deny');
+            $return = $this->endpointModel->updateInvoiceStatus($notif);
             // echo "Payment using " . $type . " for transaction order_id: " . $order_id . " is denied.";
         } else if ($transaction == 'expire') {
             // TODO set payment status in merchant's database to 'expire'
-            $this->endpointModel->updateInvoiceStatus($notif, 'expire');
+            $this->endpointModel->updateInvoiceStatus($notif);
 
             // echo "Payment using " . $type . " for transaction order_id: " . $order_id . " is expired.";
         } else if ($transaction == 'cancel') {
