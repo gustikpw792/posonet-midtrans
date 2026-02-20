@@ -13,7 +13,7 @@
 	"require": {
 		"php": ">=5.3.7",
 		"midtrans/midtrans-php": "2.*",
-		"guzzlehttp/guzzle": "^7.9"
+		"guzzlehttp/guzzle": "^6.5 || ^7.0"
 	},
 	"suggest": {
 		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
