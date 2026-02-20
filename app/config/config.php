@@ -29,12 +29,14 @@ $config['cstore_logo'] = array(
 $config['endpoint'] = array(
     array(
         // 'base_uri' => 'http://localhost/posonet/api/', // Base URL for your API endpoints
-        'base_uri' => 'http://localhost/posonet/billing_api/', // Base URL for your API endpoints
+        // 'base_uri' => 'http://localhost/posonet/billing_api/', // Base URL for your API endpoints
+        'base_uri' => 'http://103.76.105.38/posonet/billing_api/', // Base URL for your API endpoints
         'token' => 'POSONET-EP-SW5pS29kZVJhaGFzaWE=', // Client key for authentication
     ),
     array(
         // 'base_uri' => 'http://localhost/primahome/api/', // Base URL for your API endpoints
-        'base_uri' => 'http://localhost/primahome/billing_api/', // Base URL for your API endpoints
+        // 'base_uri' => 'http://localhost/primahome/billing_api/', // Base URL for your API endpoints
+        'base_uri' => 'http://103.76.105.38/primahome/billing_api/', // Base URL for your API endpoints
         'token' => 'POSONET-EP-SW5pS29kZVJhaGFzaWE=', // Client key for authentication
     ),
 );
