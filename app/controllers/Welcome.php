@@ -30,8 +30,8 @@ class Welcome extends CI_Controller {
 
 		$this->load->model('Endpoint_model', 'endpointModel');
 
-		$this->load->helper('my_bulan_helper');
-		$this->load->helper('my_ribuan_helper');
+		$this->load->helper('MY_bulan');
+		$this->load->helper('MY_ribuan');
 	}
 
 	public function index($inet = false)
