@@ -32,6 +32,9 @@ class Notification_handler extends CI_Controller {
         // exit();
         
         try {
+            // 1. Ambil JSON mentah dari Midtrans terlebih dahulu
+            $json_mentah = file_get_contents('php://input'); 
+
             $notif = new \Midtrans\Notification();
         }
         catch (\Exception $e) {
@@ -46,21 +49,21 @@ class Notification_handler extends CI_Controller {
         $fraud = $notif->fraud_status;
         $signature_key = $notif->signature_key;
         $notif->is_production = $this->midtrans['is_production'];
-        $notif->raw_response = $notif;
+        $notif->raw_response = $json_mentah;
         
         // Verifikasi signature key
-		// $expected = hash('sha512',
-		// 	$order_id.
-		// 	$notif->status_code.
-		// 	$notif->gross_amount.
-		// 	$this->serverKeys
-		// );
+		$expected = hash('sha512',
+			$order_id.
+			$notif->status_code.
+			$notif->gross_amount.
+			$this->serverKeys
+		);
 
-        // if (!isset($notif->signature_key) || $notif->signature_key !== $expected) {
-        //     log_message('error', 'Midtrans callback invalid signature for order '.$notif['order_id']);
-		// 	show_error('Invalid signature', 403);
-        //     exit();
-        // }
+        if (!isset($signature_key) !== $expected) {
+            log_message('error', 'Midtrans callback invalid signature for order '.$notif['order_id']);
+			show_error('Invalid signature', 403);
+            exit();
+        }
 
         if ($transaction == 'capture') {
             // For credit card transaction, we need to check whether transaction is challenge by FDS or not
