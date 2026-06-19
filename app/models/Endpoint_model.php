@@ -40,7 +40,7 @@ class Endpoint_model extends CI_Model {
     }
 
 
-    public function updateInvoiceStatus($data) {
+    public function updateInvoiceStatus2($data) {
         
         try {
             foreach ($this->endpoint as $e) {
@@ -53,6 +53,35 @@ class Endpoint_model extends CI_Model {
                     'headers' => [
                         'Authorization' => 'Bearer ' . $e['token']
                     ]
+                ]);
+
+                $result = json_decode($response->getBody());
+                // Check if the response status is true
+			    // log_message('error', 'Midtrans callback invalid signature for order '.$response->getBody());
+                if ($result['status']) {
+                    return $result;
+                    exit();
+                }
+            }
+        } catch (\Exception $e) {
+            echo json_encode('error: ' . $e->getMessage());
+        }
+    }
+
+    public function updateInvoiceStatus($data) {
+        
+        try {
+            foreach ($this->endpoint as $e) {
+                $client = new Client([
+                    'base_uri' => $e['base_uri'],
+                ]);
+
+                $response = $client->request('POST', 'updateBillingStatus', [
+                    'headers' => [
+                        'Authorization' => 'Bearer ' . $e['token'],
+                        'Content-Type' => 'application/json'
+                        ],
+                    'body' => $data,
                 ]);
 
                 $result = json_decode($response->getBody());

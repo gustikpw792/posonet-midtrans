@@ -30,7 +30,7 @@ class Notification_handler extends CI_Controller {
         // $this->printExampleWarningMessage();
         // echo 'haloooooooooo';
         // exit();
-
+        
         try {
             $notif = new \Midtrans\Notification();
         }
@@ -39,14 +39,15 @@ class Notification_handler extends CI_Controller {
         }
 
         $notif = $notif->getResponse();
-
+        
         $transaction = $notif->transaction_status;
         $type = $notif->payment_type;
         $order_id = $notif->order_id;
         $fraud = $notif->fraud_status;
         $signature_key = $notif->signature_key;
         $notif->is_production = $this->midtrans['is_production'];
-
+        $notif->raw_response = $notif;
+        
         // Verifikasi signature key
 		// $expected = hash('sha512',
 		// 	$order_id.
